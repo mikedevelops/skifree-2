@@ -25,7 +25,6 @@
     "awesome-typescript-loader": "^3.4.1",
     "concurrently": "^4.0.1",
     "expose-loader": "^0.7.4",
-    "express": "^4.16.2",
     "file-loader": "^2.0.0",
     "html-webpack-plugin": "^2.30.1",
     "jest": "^22.0.1",
@@ -62,6 +61,7 @@
     "socket.io": "^2.1.1",
     "socket.io-client": "^2.1.1",
     "ts-node": "^7.0.1",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "express": "^4.16.2"
   }
 }
