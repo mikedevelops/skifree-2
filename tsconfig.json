@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "es2015",
+        "module": "commonjs",
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "jsx": "react"
+    },
+    "include": [
+        "./src/**/*"
+    ],
+    "files": [
+        "./src/client.ts",
+        "./src/server.ts",
+        "./node_modules/phaser-ce/typescript/phaser.comments.d.ts"
+    ]
+}
