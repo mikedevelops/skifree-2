@@ -13,7 +13,7 @@ import Player from './Server/Entities/Player';
 const app = express();
 
 const http = new Server(app);
-const port = 8123;
+const port = process.env.PORT || 8123;
 const io = socketIo(http);
 const lobby = new LobbyService();
 const playerManager = new PlayerManager();
