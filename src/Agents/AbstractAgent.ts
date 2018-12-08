@@ -52,7 +52,7 @@ export default abstract class AbstractAgent implements IEntity {
 
     public transform (): ITransformedAgent {
         return {
-            position: this.sprite.position,
+            position: this.sprite.world,
             id: this.id
         };
     }
@@ -67,9 +67,6 @@ export default abstract class AbstractAgent implements IEntity {
 
     public setId (id: string): void {
         this.id = id;
-        this.sprite.addChild(new Phaser.Text(this.game.phaser, -5, -5, this.id.toString(), {
-           fontSize: 12
-        }));
     }
 
     public updatePosition (position: Phaser.Point): void {

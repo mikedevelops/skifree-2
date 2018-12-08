@@ -7,7 +7,7 @@ import { Socket } from 'socket.io';
 import LobbyService, { IPlayerCollection } from './Server/Services/LobbyService';
 import DuplicateUsernameException from './Exceptions/DuplicateUsernameException';
 import { ITransformedAgent } from './Agents/AbstractAgent';
-import PlayerManager from './Server/Managers/PlayerManager';
+import EntityManager from './Server/Managers/EntityManager';
 import Player from './Server/Entities/Player';
 
 const app = express();
@@ -16,7 +16,7 @@ const http = new Server(app);
 const port = process.env.PORT || 8123;
 const io = socketIo(http);
 const lobby = new LobbyService();
-const playerManager = new PlayerManager();
+const playerManager = new EntityManager();
 
 function range (min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -74,7 +74,7 @@ io.on('connection', (socket: Socket) => {
         };
         const player: Player = lobby.getPlayerById(socket.id);
 
-        console.log('set player position: ', socket.id, position.x, position.y);
+        playerManager.addPlayer(player);
         player.setPosition(position);
         done({ error: false, payload: { player: player }});
 
@@ -93,9 +93,25 @@ io.on('connection', (socket: Socket) => {
         }
     });
 
-    socket.on('game:update', (update: IUpdate) => {
-        update.entities.forEach((e) => console.log('updating: ', e.id, e.position));
-        socket.broadcast.emit('game:update', update);
+    socket.on('game:update', (update: IUpdate, done) => {
+        update.entities.forEach((entity) => {
+            const player: Player = playerManager.getEntity(entity.id) as Player;
+
+            player.setPosition(entity.position);
+        });
+
+        const otherPlayers: Player[] = playerManager.getEntities() as Player[];
+
+        done({
+            error: false,
+            payload: {
+                agents: otherPlayers
+                    // filter other players
+                    .filter((p: Player) => p.getId() !== socket.id)
+                    // transform players
+                    .map((p: Player) => p.transform())
+            }
+        });
     });
 
     socket.on('disconnect', () => {

@@ -7,7 +7,7 @@ import Socket = SocketIOClient.Socket;
 
 interface ILobbyProps {
     socket: Socket;
-    startGame: (players: ILobbyPlayerCollection) => void;
+    startGame: (username: string, players: ILobbyPlayerCollection) => void;
     config: IGameConfig;
 }
 
@@ -133,7 +133,7 @@ export default class Lobby extends React.Component<ILobbyProps, ILobbyState> {
         }
 
         if (ready) {
-            this.props.startGame(this.state.players);
+            this.props.startGame(this.username, this.state.players);
             return;
         }
 

@@ -4,7 +4,7 @@ import 'phaser-ce';
 import AbstractPhysicsAgent from '../Agents/AbstractPhysicsAgent';
 import Game from '../Game';
 import { ITransformedAgent } from '../Agents/AbstractAgent';
-import { IMessageResponse } from '../server';
+import PlayerInputController from '../Controllers/PlayerInputController';
 
 export default class EntityPool {
     private pool: IEntity[] = [];
@@ -16,12 +16,15 @@ export default class EntityPool {
         private poolSize: number
     ) {}
 
-    public create (id: string): IEntity {
+    public create (id: string, player: boolean = false): IEntity {
         if (this.pool.length >= this.poolSize) {
             throw new Error(`Attempted to add entity "${0}" to the pool but it is full!`);
         }
 
-        const entity: IEntity = this.factory.create(this.game);
+        const entity: IEntity = this.factory.create(
+            this.game,
+            new PlayerInputController()
+        );
 
         entity.init();
         entity.enable();

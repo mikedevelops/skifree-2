@@ -4,10 +4,12 @@ import AbstractState from '../State/AbstractState';
 import Animator from '../Services/Animator';
 import Game from '../Game';
 import IConsumable from './IConsumable';
+import AbstractInputController from '../Controllers/AbstractInputController';
 
 export default class Skier extends AbstractPhysicsAgent implements IConsumable {
     public constructor (
         movementManager: SkierMovementManager,
+        inputController: AbstractInputController,
         private startState: AbstractState,
         sprite: Phaser.Sprite,
         game: Game,
@@ -19,6 +21,7 @@ export default class Skier extends AbstractPhysicsAgent implements IConsumable {
     ) {
         super(
             movementManager,
+            inputController,
             game.phaser.rnd.realInRange(
                 speed - (speed / 100) * 50,
                 speed + (speed / 100) * 50

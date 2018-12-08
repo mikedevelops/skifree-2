@@ -12,6 +12,7 @@ import Network from './Services/Network';
 import IEntity from './Entities/IEntity';
 import Player from './Server/Entities/Player';
 import { IMessageResponse } from './server';
+import Yeti from './Agents/Yeti';
 
 // let entities: {
 //     YETI: Yeti;
@@ -82,8 +83,8 @@ export default class Game {
     private active: boolean = false;
     private network: Network;
     private frame: number = 0;
-    private playerId: string;
-    private player: IEntity;
+    private username: string;
+    private player: Yeti;
     private players: ILobbyPlayerCollection;
     private socket: SocketIOClient.Socket;
     private loaded: boolean = false;
@@ -94,11 +95,11 @@ export default class Game {
         private config: IGameConfig
     ) {}
 
-    public start (playerId: string, players: ILobbyPlayerCollection, socket: SocketIOClient.Socket) {
+    public start (username: string, players: ILobbyPlayerCollection, socket: SocketIOClient.Socket) {
         this.active = true;
-        this.playerId = playerId;
         this.socket = socket;
         this.players = players;
+        this.username = username;
         this.yetis = new EntityPool(this, socket, new YetiFactory(), Object.keys(players).length);
         this.phaser = new Phaser.Game(
             this.config.WIDTH,
@@ -122,7 +123,8 @@ export default class Game {
     }
 
     private create () {
-        this.player = this.yetis.create(this.playerId);
+        this.player = this.yetis.create(this.socket.id) as Yeti;
+        this.player.setUsername(this.username);
         this.socket.emit('game:playerCreated', this.config.WIDTH, this.config.HEIGHT, (response: IMessageResponse) => {
             const player = response.payload.player as IPlayer;
             const point: Phaser.Point = new Phaser.Point(player.position.x, player.position.y);
@@ -133,12 +135,14 @@ export default class Game {
             Object.keys(players)
                 .filter((p) => p !== this.player.getId())
                 .forEach((id: string) => {
-                    this.yetis.create(id).updatePosition(new Phaser.Point(
+                    const yeti: Yeti = this.yetis.create(id) as Yeti;
+
+                    yeti.updatePosition(new Phaser.Point(
                         players[id].position.x, players[id].position.y));
+                    yeti.setUsername(players[id].username);
                 });
 
-            this.network = new Network(this.socket, this.player, [this.yetis]);
-            this.network.init();
+            this.network = new Network(this.socket, this.player, this.yetis);
             this.loaded = true;
         });
 
@@ -199,7 +203,9 @@ export default class Game {
         }
 
         this.phaser.time.fps = 12;
-        this.yetis.getById(this.player.getId()).update();
+        this.player.inputController.update(new Phaser.Point(
+            this.phaser.input.activePointer.x, this.phaser.input.activePointer.y));
+        this.player.update();
 
         // 30fps update
         if (this.frame === 0 || this.frame % 2 === 0) {

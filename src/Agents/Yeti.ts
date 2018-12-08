@@ -3,12 +3,15 @@ import Animator from '../Services/Animator';
 import AbstractState from '../State/AbstractState';
 import AbstractPhysicsAgent from './AbstractPhysicsAgent';
 import Game from '../Game';
+import AbstractInputController from '../Controllers/AbstractInputController';
 
 export default class Yeti extends AbstractPhysicsAgent {
     private score: number = 0;
+    private username: string;
 
     public constructor (
         movementManager: YetiMovementManager,
+        inputController: AbstractInputController,
         private startState: AbstractState,
         sprite: Phaser.Sprite,
         game: Game,
@@ -17,7 +20,7 @@ export default class Yeti extends AbstractPhysicsAgent {
         speedFalloff: number,
         maxSpeed: number
     ) {
-        super(movementManager, speed, speedFalloff, maxSpeed, 'YETI', sprite, game, animator);
+        super(movementManager, inputController, speed, speedFalloff, maxSpeed, 'YETI', sprite, game, animator);
     }
 
     public init (): void {
@@ -31,6 +34,19 @@ export default class Yeti extends AbstractPhysicsAgent {
         this.movementManager.setState(this, this.startState);
 
         this.sprite.position.setTo(0, 0);
+    }
+
+    public setUsername (name: string): void {
+        this.username = name;
+        this.sprite.addChild(
+            new Phaser.Text(
+                this.game.phaser,
+                -this.sprite.width / 2,
+                -this.sprite.height,
+                this.username, {
+                    fontSize: 12
+                }
+        ));
     }
 
     public update (): void {

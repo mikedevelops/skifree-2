@@ -1,59 +1,30 @@
 import EntityPool from '../Pools/EntityPool';
 import { ITransformedAgent } from '../Agents/AbstractAgent';
-import { IUpdate } from '../server';
 import IEntity from '../Entities/IEntity';
-import EntityNotFoundException from '../Exceptions/EntityNotFoundException';
+import { IMessageResponse } from '../server';
+import AbstractPhysicsAgent from '../Agents/AbstractPhysicsAgent';
+import Point = Phaser.Point;
 
 export default class Network {
-    private buffer: ITransformedAgent[] = [];
-
     constructor (
         private socket: SocketIOClient.Socket,
         private player: IEntity,
-        private pools: EntityPool[],
+        private playerPool: EntityPool,
     ) {}
-
-    public init () {
-        this.socket.on('game:update', (update: IUpdate) => {
-            this.buffer = this.buffer.concat(update.entities);
-        });
-    }
 
     public update () {
         this.socket.emit('game:update', {
-            entities: this.pools.reduce((entities, pool) => {
-                entities = entities.concat(pool.transform());
-                return entities;
-            }, [])
+            entities: this.playerPool.transform()
+                .filter((player) => player.id === this.player.getId())
+        }, (response: IMessageResponse) => {
+            // Process the other entity positions
+            response.payload.agents.forEach((agent: ITransformedAgent) => {
+                const entity = this.playerPool.getById(agent.id);
+
+                if (entity instanceof AbstractPhysicsAgent) {
+                    entity.updatePosition(new Point(agent.position.x, agent.position.y));
+                }
+            });
         });
-
-        // Flatten buffer and update
-        this.buffer.forEach((update: ITransformedAgent) => {
-            if (update.id !== this.player.getId()) {
-                this.searchPools(update.id).updatePosition(update.position);
-            }
-        });
-    }
-
-    private otherPlayers (entity: ITransformedAgent): boolean {
-        return entity.id !== this.player.getId();
-    }
-
-    private searchPools (id: string): IEntity {
-        let entity: IEntity;
-
-        this.pools.forEach((pool) => {
-            const e: IEntity = pool.getById(id);
-
-            if (e !== undefined) {
-                entity = e;
-            }
-        });
-
-        if (entity === undefined) {
-            throw new EntityNotFoundException(id);
-        }
-
-        return entity;
     }
 }

@@ -1,10 +1,7 @@
 import 'phaser-ce';
 import AbstractState from './AbstractState';
 import AbstractPhysicsAgent from '../Agents/AbstractPhysicsAgent';
-import EatingState from './EatingState';
-import EatenState from './EatenState';
 import Yeti from '../Agents/Yeti';
-import Skier from '../Agents/Skier';
 import Point = Phaser.Point;
 
 export default class FollowingState extends AbstractState {
@@ -14,18 +11,17 @@ export default class FollowingState extends AbstractState {
         // Move to pointer
         const agentPosition: Point = new Point(
             agent.sprite.worldPosition.x, agent.sprite.worldPosition.y);
-        const pointerPosition: Point = new Point(
-            agent.game.phaser.input.activePointer.worldX, agent.game.phaser.input.activePointer.worldY);
+        const pointerPosition = agent.inputController.getInput();
         const distance: number = agentPosition.distance(pointerPosition);
 
         if (distance > 20) {
             agent.sprite.position = this.follow(
-                agentPosition,
-                pointerPosition,
+                new Point(agentPosition.x, agentPosition.y),
+                new Point(pointerPosition.x, pointerPosition.y),
                 agent.getSpeed());
         }
 
-        this.setDirection(agent);
+        this.setDirection(agent, pointerPosition);
 
         if (agent instanceof Yeti) {
             agent.updateSpeed();
@@ -34,8 +30,6 @@ export default class FollowingState extends AbstractState {
         this.updateAnimationSpeed(agent);
 
         if (agent.getPercentageSpeed() < 50 && this.fps > 6) {
-            console.log('updating speed');
-
             this.fps = 6;
             agent.sprite.animations.stop('run');
             agent.sprite.animations.play('run', this.fps, true);
@@ -71,8 +65,8 @@ export default class FollowingState extends AbstractState {
         // }
     }
 
-    private setDirection (agent: AbstractPhysicsAgent): void {
-        if (agent.game.phaser.input.activePointer.worldX < agent.sprite.position.x) {
+    private setDirection (agent: AbstractPhysicsAgent, pointer: Phaser.Point): void {
+        if (agent.sprite.position.x - pointer.x > 0) {
             agent.sprite.scale.setTo(-1, 1);
         } else {
             agent.sprite.scale.setTo(1, 1);

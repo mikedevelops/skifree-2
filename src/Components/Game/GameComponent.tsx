@@ -33,8 +33,8 @@ export default class GameComponent extends React.Component<IGameProps, IGameStat
                 startGame={this.handleStartGame.bind(this)}/>;
     }
 
-    private handleStartGame (players: ILobbyPlayerCollection): void {
-        this.props.game.start(this.props.socket.id, players, this.props.socket);
+    private handleStartGame (username: string, players: ILobbyPlayerCollection): void {
+        this.props.game.start(username, players, this.props.socket);
         this.setState({
             start: true
         });

@@ -2,10 +2,12 @@ import AbstractAgent from './AbstractAgent';
 import YetiMovementManager from '../StateManagers/YetiMovementManager';
 import Game from '../Game';
 import Animator from '../Services/Animator';
+import AbstractInputController from '../Controllers/AbstractInputController';
 
 export default abstract class AbstractPhysicsAgent extends AbstractAgent {
     protected constructor (
         public movementManager: YetiMovementManager,
+        public inputController: AbstractInputController,
         private speed: number,
         private speedFalloff: number,
         private maxSpeed: number,
